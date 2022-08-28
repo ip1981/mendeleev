@@ -1,0 +1,38 @@
+Mendeleev — find chemical elements in words.
+
+For example, the word "Moscow" can be split in the following ways:
+    Mo S C O W,
+    Mo S Co W,
+    Mo Sc O W,
+where:
+    Mo — Molybdenum,
+    S  — Sulfur,
+    Sc — Scandium,
+    C  — Carbon,
+    Co — Cobalt,
+    W  — Wolfram (Tungsten).
+
+When a character cannot be found among the chemical elements, it's replaced
+with a question mark:
+    language -> La N ? U Ag ?
+
+There are implementations in several programming languages.  Each program
+accepts words as arguments and prints all the possible combinations,
+for example:
+
+    $ ./mendeleev-c preprocessor
+    preprocessor:
+     P Re P ? O C Es S O ?
+     P Re P ? O Ce S S O ?
+     P Re Pr O C Es S O ?
+     P Re Pr O Ce S S O ?
+     Pr ? P ? O C Es S O ?
+     Pr ? P ? O Ce S S O ?
+     Pr ? Pr O C Es S O ?
+     Pr ? Pr O Ce S S O ?
+
+This software is Public Domain. See the LICENSE file for details.
+
+Dmitri Ivanovich Mendeleev (1834–1907) was a Russian chemist and inventor
+known for formulating the Periodic Law.
+
