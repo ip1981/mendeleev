@@ -1,4 +1,3 @@
-#include<ctype.h>
 #include<stdio.h>
 #include<stdlib.h>
 #include<string.h>
@@ -31,20 +30,20 @@ static void
 search (size_t *start, size_t *len, size_t shift, char c)
 {
   size_t l, m, u;
-  int c_ = tolower (c);
+  char c_ = c | ' ';
 
   u = *start + *len;
   l = *start;
   while (l < u)
     {
       m = (l + u) / 2;
-      if (tolower (ELEMENTS[m][shift]) < c_)
+      if ((ELEMENTS[m][shift] | ' ') < c_)
         l = m + 1;
       else
         u = m;
     }
 
-  if ((l == *start + *len) || (tolower (ELEMENTS[l][shift]) != c_))
+  if ((l == *start + *len) || ((ELEMENTS[l][shift] | ' ') != c_))
     {
       *len = 0;
       return;
@@ -55,7 +54,7 @@ search (size_t *start, size_t *len, size_t shift, char c)
   while (l < u)
     {
       m = (l + u) / 2;
-      if (c_ < tolower (ELEMENTS[m][shift]))
+      if (c_ < (ELEMENTS[m][shift] | ' '))
         u = m;
       else
         l = m + 1;
