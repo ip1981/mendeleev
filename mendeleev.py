@@ -62,7 +62,7 @@ def divide(tail):
             break
 
         shift += 1
-        if len(ELEMENTS[start]) == shift:
+        if len(elements[start]) == shift:
             result.append((ELEMENTS[start], tail[shift:]))
             start += 1
             length -= 1
