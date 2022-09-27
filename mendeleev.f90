@@ -69,14 +69,7 @@ contains
    pure integer function tolower(c)
       character(len=1), intent(in) :: c
 
-      integer :: i
-
-      i = iachar(c)
-      if (i >= 65 .and. i < 90) then
-         tolower = i + 32
-      else
-         tolower = i
-      endif
+      tolower = ior(32, iachar(c))
    end function tolower
 
 
