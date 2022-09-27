@@ -30,20 +30,20 @@ static void
 search (size_t *start, size_t *len, size_t shift, char c)
 {
   size_t l, m, u;
-  char c_ = c | ' ';
+  c |= ' ';
 
   u = *start + *len;
   l = *start;
   while (l < u)
     {
       m = (l + u) / 2;
-      if ((ELEMENTS[m][shift] | ' ') < c_)
+      if ((ELEMENTS[m][shift] | ' ') < c)
         l = m + 1;
       else
         u = m;
     }
 
-  if ((l == *start + *len) || ((ELEMENTS[l][shift] | ' ') != c_))
+  if ((l == *start + *len) || ((ELEMENTS[l][shift] | ' ') != c))
     {
       *len = 0;
       return;
@@ -54,7 +54,7 @@ search (size_t *start, size_t *len, size_t shift, char c)
   while (l < u)
     {
       m = (l + u) / 2;
-      if (c_ < (ELEMENTS[m][shift] | ' '))
+      if (c < (ELEMENTS[m][shift] | ' '))
         u = m;
       else
         l = m + 1;
