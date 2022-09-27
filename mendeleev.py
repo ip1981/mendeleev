@@ -16,7 +16,7 @@ ELEMENTS = [
 ]
 # fmt: on
 
-elements = [el.lower() for el in ELEMENTS]
+elements = [el.lower().encode() for el in ELEMENTS]
 
 
 def search(start, length, shift, char):
@@ -75,7 +75,7 @@ def advance(els, tail):
 
 
 def explode(word):
-    result = [([], word.lower())]
+    result = [([], word.lower().encode())]
     while True:
         new = []
         tail = None
