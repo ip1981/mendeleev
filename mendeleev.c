@@ -151,15 +151,9 @@ explode (const char *word)
     return NULL;
 
   while (*formula->tail)
-    {
-      formula_t *f = formula;
-      while (f)
-        {
-          if (*f->tail)
-            advance (f);
-          f = f->next;
-        }
-    }
+    for (formula_t * f = formula; f; f = f->next)
+      if (*f->tail)
+        advance (f);
 
   return formula;
 }
