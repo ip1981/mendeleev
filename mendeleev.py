@@ -76,22 +76,16 @@ def advance(els, tail):
 
 def explode(word):
     result = [([], word.lower().encode())]
-    while True:
+    while result[0][1]:
         new = []
-        tail = None
         for res in result:
             if res[1]:
                 adv = advance(*res)
                 new.extend(adv)
-                if not tail:
-                    tail = adv[0][1]
             else:
                 new.append(res)
 
         result = new
-
-        if not tail:
-            break
 
     return [els for els, _ in result]
 

@@ -150,18 +150,13 @@ explode (const char *word)
   if (!formula)
     return NULL;
 
-  while (*word)
+  while (*formula->tail)
     {
-      word = NULL;
       formula_t *f = formula;
       while (f)
         {
           if (*f->tail)
-            {
-              advance (f);
-              if (!word)
-                word = f->tail;
-            }
+            advance (f);
           f = f->next;
         }
     }

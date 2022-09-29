@@ -171,23 +171,19 @@ contains
       character(len=*), intent(in) :: word
       type(formula_t), pointer :: formula
 
-      logical :: has_tail
       type(formula_t), pointer :: f
 
       allocate(formula)
       allocate(formula%elements(len(word)))
 
-      do
+      do while (formula%tail <= len(word))
          f => formula
-         has_tail = .false.
          do while (associated(f))
             if (f%tail <= len(word)) then
                call advance(word, f)
-               if (.not. has_tail) has_tail = f%tail <= len(word)
             end if
             f => f%next
          end do
-         if (.not. has_tail) exit
       end do
    end function explode
 end program mendeleev
