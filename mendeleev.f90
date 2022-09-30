@@ -118,14 +118,15 @@ contains
    end subroutine search
 
 
-   pure subroutine advance(word, f)
+   pure subroutine advance(word, formula)
       character(len=*), intent(in) :: word
-      type(formula_t), pointer, intent(in out) :: f
+      type(formula_t), pointer, intent(in out) :: formula
 
       integer :: n, tail
       integer :: start, length, sh, c
-      type(formula_t), pointer :: g
+      type(formula_t), pointer :: f, g
 
+      f => formula
       tail = f%tail
       n = f%n
 
@@ -176,14 +177,12 @@ contains
       allocate(formula)
       allocate(formula%elements(len(word)))
 
-      do while (formula%tail <= len(word))
-         f => formula
-         do while (associated(f))
-            if (f%tail <= len(word)) then
-               call advance(word, f)
-            end if
-            f => f%next
+      f => formula
+      do while (associated(f))
+         do while (f%tail <= len(word))
+            call advance(word, f)
          end do
+         f => f%next
       end do
    end function explode
 end program mendeleev
