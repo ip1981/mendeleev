@@ -2,7 +2,8 @@ BINARIES := \
 	mendeleev-c \
 	mendeleev-c-cpp \
 	mendeleev-f \
-	mendeleev-hs
+	mendeleev-hs \
+	mendeleev-py \
 
 SCRIPTS := \
 	python2:mendeleev.py \
@@ -49,12 +50,6 @@ prof: \
 	$(RM) $<-gmon.*
 	GMON_OUT_PREFIX=$<-gmon ./$< $(PROF_TEST) > /dev/null
 	$(MV) $<-gmon.* $@
-
-prof-mendeleev-py.dat: mendeleev.py
-	python3 -m cProfile -o $@ $< $(PROF_TEST) > /dev/null
-
-prof-mendeleev-py.txt: prof-mendeleev-py.dat
-	python3 -c 'import pstats; pstats.Stats("$<").sort_stats("tottime").print_stats()' > $@
 
 
 # C
@@ -105,4 +100,18 @@ prof-mendeleev-hs: mendeleev.hs
 prof-mendeleev-hs.txt: prof-mendeleev-hs
 	./$< +RTS -p -RTS $(PROF_TEST) > /dev/null
 	$(MV) $<.prof $@
+
+# Python
+NUITKA = nuitka3
+NUITKA_FLAGS = --quiet --remove-output --follow-imports
+mendeleev-py: mendeleev.py
+	$(NUITKA) $(NUITKA_FLAGS) $< -o $@
+
+prof-mendeleev-py.dat: mendeleev.py
+	python3 -m cProfile -o $@ $< $(PROF_TEST) > /dev/null
+
+prof-mendeleev-py.txt: prof-mendeleev-py.dat
+	python3 -c 'import pstats; pstats.Stats("$<").sort_stats("tottime").print_stats()' > $@
+
+
 
