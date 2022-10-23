@@ -4,6 +4,7 @@ BINARIES := \
 	mendeleev-f \
 	mendeleev-hs \
 	mendeleev-py \
+	mendeleev-tree-c \
 
 SCRIPTS := \
 	python2:mendeleev.py \
@@ -44,7 +45,8 @@ prof: \
 	prof-mendeleev-c.txt \
 	prof-mendeleev-f.txt \
 	prof-mendeleev-hs.txt \
-	prof-mendeleev-py.txt
+	prof-mendeleev-py.txt \
+	prof-mendeleev-tree-c.txt \
 
 %.gmon: %
 	$(RM) $<-gmon.*
@@ -55,21 +57,21 @@ prof: \
 # C
 CC = gcc
 CFLAGS = -std=c99 -Wall -Wextra -O2
-mendeleev-c: mendeleev.c
+%-c: %.c
 	$(CC) $(CFLAGS) $< -o $@
 
 CFLAGS_PROF = -O0 -g -pg
-prof-mendeleev-c: mendeleev.c
+prof-%-c: %.c
 	$(CC) $(CFLAGS_PROF) $< -o $@
 
-prof-mendeleev-c.txt: prof-mendeleev-c.gmon
-	gprof --brief prof-mendeleev-c $< > $@
+prof-%-c.txt: prof-%-c.gmon
+	gprof --brief prof-$*-c $< > $@
 
 
 # C++
 CXX = g++
 CXXFLAGS = -std=c++98 -Wall -Wextra -O2
-mendeleev-c-cpp: mendeleev.c
+%-c-cpp: %.c
 	$(CXX) $(CXXFLAGS) $< -o $@
 
 
@@ -101,6 +103,7 @@ prof-mendeleev-hs.txt: prof-mendeleev-hs
 	./$< +RTS -p -RTS $(PROF_TEST) > /dev/null
 	$(MV) $<.prof $@
 
+
 # Python
 NUITKA = nuitka3
 NUITKA_FLAGS = --quiet --remove-output --follow-imports
@@ -112,6 +115,4 @@ prof-mendeleev-py.dat: mendeleev.py
 
 prof-mendeleev-py.txt: prof-mendeleev-py.dat
 	python3 -c 'import pstats; pstats.Stats("$<").sort_stats("tottime").print_stats()' > $@
-
-
 
