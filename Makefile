@@ -6,10 +6,17 @@ BINARIES := \
 	mendeleev-py \
 	mendeleev-tree-c \
 
-SCRIPTS := \
+LISP := \
+	clisp:mendeleev.lisp \
+	ecl:--shell:mendeleev.lisp \
+	sbcl:--script:mendeleev.lisp \
+
+PYTHON := \
+	pypy:mendeleev.py \
 	python2:mendeleev.py \
 	python3:mendeleev.py \
-	pypy:mendeleev.py
+
+SCRIPTS := $(LISP) $(PYTHON)
 
 .PHONY: build
 build: $(BINARIES)
@@ -115,4 +122,5 @@ prof-mendeleev-py.dat: mendeleev.py
 
 prof-mendeleev-py.txt: prof-mendeleev-py.dat
 	python3 -c 'import pstats; pstats.Stats("$<").sort_stats("tottime").print_stats()' > $@
+
 
