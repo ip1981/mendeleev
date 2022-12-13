@@ -17,14 +17,13 @@ static const char *const ELEMENTS[] = { "?",
 
 static const size_t NELEMENTS = sizeof (ELEMENTS) / sizeof (const char *) - 1;
 
-typedef struct formula
+typedef struct element
 {
-  const char *tail;
   size_t n;
-  size_t *els;
-  struct formula *next;
-} formula_t;
-
+  const char *tail;
+  struct element *sibs;
+  struct element *next;
+} element_t;
 
 static void
 search (size_t *start, size_t *len, size_t shift, char c)
@@ -63,48 +62,11 @@ search (size_t *start, size_t *len, size_t shift, char c)
   *len = u - *start;
 }
 
-static formula_t *
-new_formula (const char *tail, size_t n, const size_t *els)
+static element_t *
+divide (const char *tail)
 {
-  formula_t *f = (formula_t *) malloc (sizeof (formula_t));
-  if (!f)
-    return NULL;
-
-  f->els = (size_t *) malloc (sizeof (*f->els) * (n + strlen (tail)));
-  if (!f->els)
-    {
-      free (f);
-      return NULL;
-    }
-
-  if (n > 0)
-    (void) memcpy (f->els, els, n * sizeof (*f->els));
-
-  f->n = n;
-  f->tail = tail;
-  f->next = NULL;
-
-  return f;
-}
-
-static void
-free_formula (formula_t * f)
-{
-  while (f)
-    {
-      formula_t *next = f->next;
-      if (f->els)
-        free (f->els);
-      free (f);
-      f = next;
-    }
-}
-
-static void
-advance (formula_t * f)
-{
-  const char *tail = f->tail;
-  size_t n = f->n;
+  element_t *head = NULL;
+  element_t *last = NULL;
 
   size_t start = 1;
   size_t len = NELEMENTS;
@@ -119,64 +81,101 @@ advance (formula_t * f)
       shift++;
       if (!ELEMENTS[start][shift])
         {
-          if (n != f->n)
-            {
-              formula_t *g = new_formula (tail, n, f->els);
-              if (!g)
-                break;
-              g->next = f->next;
-              f->next = g;
-              f = g;
-            }
+          element_t *el = (element_t *) malloc (sizeof (element_t));
+          if (!el)
+            break;
 
-          f->els[f->n++] = start;
-          f->tail = &tail[shift];
+          if (!head)
+            head = el;
+
+          if (last)
+            last->sibs = el;
+
+          last = el;
+          last->n = start;
+          last->tail = &tail[shift];
           start++;
           len--;
         }
     }
 
-  if (n == f->n)
+  if (!head)
     {
-      f->els[f->n++] = 0;
-      f->tail += 1;
+      head = (element_t *) malloc (sizeof (element_t));
+      if (!head)
+        return NULL;
+      head->n = 0;
+      head->tail = &tail[1];
+      last = head;
+    }
+
+  last->sibs = NULL;
+
+  return head;
+}
+
+static element_t *
+explode (const char *word)
+{
+  element_t *root = divide (word);
+  for (element_t * el = root; el; el = el->sibs)
+    el->next = *el->tail ? explode (el->tail) : NULL;
+  return root;
+}
+
+static void
+free_elements (element_t * el)
+{
+  while (el)
+    {
+      if (el->next)
+        free_elements (el->next);
+      element_t *sib = el->sibs;
+      free (el);
+      el = sib;
     }
 }
 
-static formula_t *
-explode (const char *word)
+static void
+print_plain (const element_t * current, size_t *formula, size_t n)
 {
-  formula_t *formula = new_formula (word, 0, NULL);
-  if (!formula)
-    return NULL;
-
-  for (formula_t * f = formula; f; f = f->next)
-    while (*f->tail)
-      advance (f);
-
-  return formula;
+  for (const element_t * el = current; el; el = el->sibs)
+    {
+      formula[n] = el->n;
+      if (el->next)
+        print_plain (el->next, formula, n + 1);
+      else
+        {
+          for (size_t i = 0; i <= n; i++)
+            printf (" %s", ELEMENTS[formula[i]]);
+          printf ("\n");
+        }
+    }
 }
 
 int
 main (int argc, const char *argv[])
 {
-  for (int w = 1; w < argc; w++)
+  for (int i = 1; i < argc; i++)
     {
-      const char *word = argv[w];
+      const char *word = argv[i];
       printf ("%s:\n", word);
 
-      formula_t *formula = explode (word);
+      size_t len = strlen (word);
+      if (!len)
+        continue;
+
+      element_t *root = explode (word);
+      if (!root)
+        return EXIT_FAILURE;
+
+      size_t *formula = (size_t *) malloc (len * sizeof (size_t));
       if (!formula)
         return EXIT_FAILURE;
 
-      for (formula_t * f = formula; f; f = f->next)
-        {
-          for (size_t i = 0; i < f->n; i++)
-            printf (" %s", ELEMENTS[f->els[i]]);
-          if (f->n)
-            printf ("\n");
-        }
-      free_formula (formula);
+      print_plain (root, formula, 0);
+      free (formula);
+      free_elements (root);
     }
 
   return EXIT_SUCCESS;

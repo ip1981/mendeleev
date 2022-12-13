@@ -4,7 +4,6 @@ BINARIES := \
 	mendeleev-f \
 	mendeleev-hs \
 	mendeleev-py \
-	mendeleev-tree-c \
 
 LISP := \
 	clisp:mendeleev.lisp \
@@ -53,7 +52,6 @@ prof: \
 	prof-mendeleev-f.txt \
 	prof-mendeleev-hs.txt \
 	prof-mendeleev-py.txt \
-	prof-mendeleev-tree-c.txt \
 
 %.gmon: %
 	$(RM) $<-gmon.*
