@@ -4,6 +4,7 @@ BINARIES := \
 	mendeleev-f \
 	mendeleev-hs \
 	mendeleev-py \
+	mendeleev-rs \
 
 LISP := \
 	clisp:mendeleev.lisp \
@@ -121,4 +122,10 @@ prof-mendeleev-py.dat: mendeleev.py
 prof-mendeleev-py.txt: prof-mendeleev-py.dat
 	python3 -c 'import pstats; pstats.Stats("$<").sort_stats("tottime").print_stats()' > $@
 
+
+# Rust
+RUSTC = rustc
+RUSTC_FLAGS = -C opt-level=2 -C strip=symbols
+mendeleev-rs: mendeleev.rs
+	$(RUSTC) $(RUSTC_FLAGS) $< -o $@
 
