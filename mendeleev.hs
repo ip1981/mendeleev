@@ -26,9 +26,9 @@ search c = takeWhile start . dropWhile (not . start)
     start (x:_) = toLower x == c'
     c' = toLower c
 
-divide :: String -> [(String, String)]
-divide [] = []
-divide (x:xs) =
+split :: String -> [(String, String)]
+split [] = []
+split (x:xs) =
   if null res
     then [("?", xs)]
     else res
@@ -47,7 +47,7 @@ divide (x:xs) =
             _ -> r'
 
 advance :: ([String], String) -> [([String], String)]
-advance (els, rest) = map collect $ divide rest
+advance (els, rest) = map collect $ split rest
   where
     collect (el, rest') = (el : els, rest')
 

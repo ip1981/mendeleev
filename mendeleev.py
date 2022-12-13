@@ -49,7 +49,7 @@ def search(start, length, shift, char):
     return (start, length)
 
 
-def divide(tail):
+def split(tail):
     result = []
 
     start = 0
@@ -71,7 +71,7 @@ def divide(tail):
 
 
 def advance(els, tail):
-    return [(els + [e], t) for (e, t) in divide(tail)]
+    return [(els + [e], t) for (e, t) in split(tail)]
 
 
 def explode(word):

@@ -41,7 +41,7 @@
                 (setf l (1+ m))))
         (setf (cdr range) (- u (car range))) (return)))
 
-(defun divide (tail)
+(defun split (tail)
   (prog ((range (cons 1 +nelems+))
          (sh 0)
          (r ()))
@@ -57,7 +57,7 @@
         (return (reverse r))))
 
 (defun explode (tail)
-  (let ((sibs (divide tail))
+  (let ((sibs (split tail))
         (next (lambda (x)
                 (cons (car x)
                       (when (string/= "" (cdr x))

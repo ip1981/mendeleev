@@ -63,7 +63,7 @@ search (size_t *start, size_t *len, size_t shift, char c)
 }
 
 static element_t *
-divide (const char *tail)
+split (const char *tail)
 {
   element_t *head = NULL;
   element_t *last = NULL;
@@ -117,7 +117,7 @@ divide (const char *tail)
 static element_t *
 explode (const char *word)
 {
-  element_t *root = divide (word);
+  element_t *root = split (word);
   for (element_t * el = root; el; el = el->sibs)
     el->next = *el->tail ? explode (el->tail) : NULL;
   return root;
