@@ -85,11 +85,10 @@ split (const char *tail)
           if (!el)
             break;
 
-          if (!head)
-            head = el;
-
           if (last)
             last->sibs = el;
+          else
+            head = el;
 
           last = el;
           last->n = start;
