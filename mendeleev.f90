@@ -14,16 +14,17 @@ program mendeleev
      "Sg", "Si", "Sm", "Sn", "Sr", "Ta", "Tb", "Tc", "Te", "Th", "Ti", "Tl", &
      "Tm", "Ts", "U ", "V ", "W ", "Xe", "Y ", "Yb", "Zn", "Zr" /)
 
-   type :: formula_t
-      integer :: tail = 1
-      integer :: n = 0
-      integer, dimension(:), allocatable :: elements
-      type(formula_t), pointer :: next => null()
-   end type formula_t
+   type :: element_t
+      integer :: eid = 0
+      character(len=:), pointer :: tail => null()
+      type(element_t), pointer :: sibs => null()
+      type(element_t), pointer :: next => null()
+   end type element_t
 
-   type(formula_t), pointer :: formula, f
-   character(len=:), allocatable :: word
-   integer :: length, argc, i, j
+   type(element_t), pointer :: root
+   character(len=:), pointer :: word
+   integer, dimension(:), allocatable :: formula
+   integer :: length, argc, i
 
    argc = command_argument_count()
    do i = 1, argc
@@ -32,38 +33,31 @@ program mendeleev
       call get_command_argument(i, value=word)
       write (*, "(A, ':')") word
 
-      formula => explode(word)
+      if (length > 0) then
+         root => explode(word)
+         allocate(formula(length))
+         call print_plain(root, formula, 1)
+         deallocate(formula)
+         call free_elements(root)
+      end if
 
-      f => formula
-      do while (associated(f))
-         if (f%n > 0) then
-            do j = 1, f%n
-               write (*, "(' ', A)", advance="no") trim(ELEMENTS(f%elements(j)))
-            end do
-            write (*, "()")
-         end if
-         f => f%next
-      end do
-
-      call free_formula(formula)
       deallocate(word)
    end do
 
 
 contains
 
-   pure subroutine free_formula(formula)
-      type(formula_t), pointer, intent(in out) :: formula
+   pure recursive subroutine free_elements(root)
+      type(element_t), pointer, intent(in out) :: root
+      type(element_t), pointer :: sibs
 
-      type(formula_t), pointer :: next
-
-      do while (associated(formula))
-         next => formula%next
-         deallocate(formula%elements)
-         deallocate(formula)
-         formula => next
+      do while (associated(root))
+         if (associated(root%next)) call free_elements(root%next)
+         sibs => root%sibs
+         deallocate(root)
+         root => sibs
       end do
-   end subroutine free_formula
+   end subroutine free_elements
 
 
    pure integer function tolower(c)
@@ -77,7 +71,6 @@ contains
       integer, intent(in out) :: start, length
       integer, intent(in) :: sh
       character(len=1), intent(in) :: c
-
       integer :: l, m, u, c_
 
       c_ = tolower(c)
@@ -118,71 +111,78 @@ contains
    end subroutine search
 
 
-   pure subroutine advance(word, formula)
-      character(len=*), intent(in) :: word
-      type(formula_t), pointer, intent(in out) :: formula
+   function split(tail) result(head)
+      character(len=:), pointer, intent(in) :: tail
+      type(element_t), pointer :: head, last, el
+      integer :: start, length, sh
 
-      integer :: n, tail
-      integer :: start, length, sh, c
-      type(formula_t), pointer :: f, g
+      head => null()
+      last => null()
 
-      f => formula
-      tail = f%tail
-      n = f%n
-
-      sh = 0
       start = 1
       length = ubound(ELEMENTS, 1)
-      do
-         c = tail + sh
-         if (len(word) < c) exit
-
-         sh = sh + 1
-         call search(start, length, sh, word(c:c))
+      do sh = 1, len(tail)
+         call search(start, length, sh, tail(sh:sh))
          if (length == 0) exit
 
          if (sh == len_trim(ELEMENTS(start))) then
-            if (n /= f%n) then
-               allocate(g)
-               allocate(g%elements(len(word)))
-               g%n = n
-               g%elements(1:n) = f%elements(1:n)
-               g%next => f%next
-               f%next => g
-               f => g
+            allocate(el)
+            if (associated(last)) then
+               last%sibs => el
+            else
+               head => el
             end if
 
-            f%n = f%n + 1
-            f%elements(f%n) = start
-            f%tail = c + 1
+            last => el
+            last%eid = start
+            last%tail => tail(sh+1:)
+
             start = start + 1
             length = length - 1
          end if
       end do
 
-      if (n == f%n) then
-         f%tail = f%tail + 1
-         f%n = f%n + 1
-         f%elements(f%n) = 0
+      if (.not. associated(head)) then
+         allocate(head)
+         head%tail => tail(2:)
       end if
-   end subroutine advance
+   end function split
 
 
-   pure function explode(word) result(formula)
-      character(len=*), intent(in) :: word
-      type(formula_t), pointer :: formula
+   recursive function explode(tail) result(root)
+      character(len=:), pointer, intent(in) :: tail
+      type(element_t), pointer :: root, el
 
-      type(formula_t), pointer :: f
-
-      allocate(formula)
-      allocate(formula%elements(len(word)))
-
-      f => formula
-      do while (associated(f))
-         do while (f%tail <= len(word))
-            call advance(word, f)
-         end do
-         f => f%next
+      root => split(tail)
+      el => root
+      do while (associated(el))
+         if (0 < len(el%tail)) el%next => explode(el%tail)
+         el => el%sibs
       end do
    end function explode
+
+
+   recursive subroutine print_plain(tree, formula, n)
+      type(element_t), pointer, intent(in) :: tree
+      integer, dimension(:), intent(in out) :: formula
+      integer, value :: n
+      type(element_t), pointer :: el
+      integer :: i
+
+      el => tree
+      do while (associated(el))
+         formula(n) = el%eid
+         if (associated(el%next)) then
+            call print_plain(el%next, formula, n+1)
+         else
+            do i = 1, n
+               write (*, "(' ', A)", advance="no") trim(ELEMENTS(formula(i)))
+            end do
+            write (*, "()")
+         end if
+         el => el%sibs
+      end do
+   end subroutine print_plain
+
 end program mendeleev
+
