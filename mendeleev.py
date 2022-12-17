@@ -70,27 +70,25 @@ def split(tail):
     return result or [("?", tail[1:])]
 
 
-def advance(els, tail):
-    return [(els + [e], t) for (e, t) in split(tail)]
+def explode(tail):
+    return [(x[0], explode(x[1]) if x[1] else None) for x in split(tail)]
 
 
-def explode(word):
-    result = [([], word.lower().encode())]
-    while result[0][1]:
-        new = []
-        for res in result:
-            if res[1]:
-                adv = advance(*res)
-                new.extend(adv)
-            else:
-                new.append(res)
+def analyze(word):
+    return explode(word.lower().encode())
 
-        result = new
 
-    return [els for els, _ in result]
+def print_plain(tree, formula):
+    for x in tree:
+        formula.append(x[0])
+        if x[1]:
+            print_plain(x[1], formula)
+        else:
+            print(" " + " ".join(formula))
+        formula.pop()
 
 
 for w in sys.argv[1:]:
     print(w + ":")
-    for f in filter(None, explode(w)):
-        print(" " + " ".join(f))
+    if w:
+        print_plain(analyze(w), [])
