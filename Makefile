@@ -1,6 +1,7 @@
 BINARIES := \
 	mendeleev-c \
 	mendeleev-c-cpp \
+	mendeleev-cpp \
 	mendeleev-f \
 	mendeleev-hs \
 	mendeleev-py \
@@ -76,9 +77,19 @@ prof-%-c.txt: prof-%-c.gmon
 
 # C++
 CXX = g++
-CXXFLAGS = -std=c++98 -Wall -Wextra -O2
+CXXFLAGS = -std=c++17 -Wall -Wextra -O2
 %-c-cpp: %.c
 	$(CXX) $(CXXFLAGS) $< -o $@
+
+%-cpp: %.cpp
+	$(CXX) $(CXXFLAGS) $< -o $@
+
+CXXFLAGS_PROF = -O0 -g -pg
+prof-%-cpp: %.cpp
+	$(CXX) $(CXXFLAGS_PROF) $< -o $@
+
+prof-mendeleev-cpp.txt: prof-mendeleev-cpp.gmon
+	gprof --brief prof-mendeleev-cpp $< > $@
 
 
 # Fortran
