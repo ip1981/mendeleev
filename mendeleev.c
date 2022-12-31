@@ -155,6 +155,9 @@ print_plain (const element_t * current, size_t *formula, size_t n)
 int
 main (int argc, const char *argv[])
 {
+  size_t *formula = NULL;
+  int rc = EXIT_SUCCESS;
+
   for (int i = 1; i < argc; i++)
     {
       const char *word = argv[i];
@@ -164,18 +167,27 @@ main (int argc, const char *argv[])
       if (!len)
         continue;
 
+      size_t *f = (size_t *) realloc (formula, len * sizeof (size_t));
+      if (!f)
+        {
+          rc = EXIT_FAILURE;
+          break;
+        }
+
+      formula = f;
+
       element_t *root = explode (word);
       if (!root)
-        return EXIT_FAILURE;
-
-      size_t *formula = (size_t *) malloc (len * sizeof (size_t));
-      if (!formula)
-        return EXIT_FAILURE;
+        {
+          rc = EXIT_FAILURE;
+          break;
+        }
 
       print_plain (root, formula, 0);
-      free (formula);
       free_elements (root);
     }
 
-  return EXIT_SUCCESS;
+  if (formula)
+    free (formula);
+  return rc;
 }
