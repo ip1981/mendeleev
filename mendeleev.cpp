@@ -34,11 +34,11 @@ struct Element {
       : eid(eid_), next(next_) {}
 };
 
-static void search(size_t &start, size_t &len, size_t shift, char c) {
+static void search(size_t &start, size_t &end, size_t shift, char c) {
   size_t l, m, u;
   c |= ' ';
 
-  u = start + len;
+  u = end;
   l = start;
   while (l < u) {
     m = (l + u) / 2;
@@ -48,12 +48,12 @@ static void search(size_t &start, size_t &len, size_t shift, char c) {
       u = m;
   }
 
-  if ((l == start + len) || ((ELEMENTS[l][shift] | ' ') != c)) {
-    len = 0;
+  if ((l == end) || ((ELEMENTS[l][shift] | ' ') != c)) {
+    end = 0;
     return;
   }
 
-  u = start + len;
+  u = end;
   start = l;
   while (l < u) {
     m = (l + u) / 2;
@@ -63,26 +63,25 @@ static void search(size_t &start, size_t &len, size_t shift, char c) {
       l = m + 1;
   }
 
-  len = u - start;
+  end = u;
 }
 
 static list<Split> split(string_view tail) {
   auto x = list<Split>();
 
   size_t start = 1;
-  size_t len = ELEMENTS.size() - 1;
+  size_t end = ELEMENTS.size();
   size_t shift = 0;
 
   while (shift < tail.length()) {
-    search(start, len, shift, tail[shift]);
-    if (!len)
+    search(start, end, shift, tail[shift]);
+    if (start >= end)
       break;
 
     shift++;
     if (shift == ELEMENTS[start].length()) {
       x.emplace_back(start, tail.substr(shift));
       start++;
-      len--;
     }
   }
 

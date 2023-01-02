@@ -67,15 +67,15 @@ contains
    end function tolower
 
 
-   pure subroutine search(start, length, sh, c)
-      integer, intent(in out) :: start, length
+   pure subroutine search(start, end, sh, c)
+      integer, intent(in out) :: start, end
       integer, intent(in) :: sh
       character(len=1), intent(in) :: c
       integer :: l, m, u, c_
 
       c_ = tolower(c)
 
-      u = start + length
+      u = end
       l = start
       do while (l < u)
          m = (u + l) / 2
@@ -86,17 +86,17 @@ contains
         endif
       end do
 
-      if (l == start + length) then
-        length = 0
+      if (l == end) then
+        end = 0
         return
       end if
 
       if (tolower(ELEMENTS(l)(sh:sh)) /= c_) then
-        length = 0
+         end = 0
         return
       end if
 
-      u = start + length
+      u = end
       start = l
       do while (l < u)
          m = (u + l) / 2
@@ -107,23 +107,23 @@ contains
         endif
       end do
 
-      length = u - start
+      end = u
    end subroutine search
 
 
    function split(tail) result(head)
       character(len=:), pointer, intent(in) :: tail
       type(element_t), pointer :: head, last, el
-      integer :: start, length, sh
+      integer :: start, end, sh
 
       head => null()
       last => null()
 
       start = 1
-      length = ubound(ELEMENTS, 1)
+      end = ubound(ELEMENTS, 1) + 1
       do sh = 1, len(tail)
-         call search(start, length, sh, tail(sh:sh))
-         if (length == 0) exit
+         call search(start, end, sh, tail(sh:sh))
+         if (start >= end) exit
 
          if (sh == len_trim(ELEMENTS(start))) then
             allocate(el)
@@ -138,7 +138,6 @@ contains
             last%tail => tail(sh+1:)
 
             start = start + 1
-            length = length - 1
          end if
       end do
 

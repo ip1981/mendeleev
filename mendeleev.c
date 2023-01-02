@@ -15,8 +15,6 @@ static const char *const ELEMENTS[] = { "?",
   "Tm", "Ts", "U", "V", "W", "Xe", "Y", "Yb", "Zn", "Zr"
 };
 
-static const size_t NELEMENTS = sizeof (ELEMENTS) / sizeof (const char *) - 1;
-
 typedef struct element
 {
   size_t n;
@@ -26,12 +24,12 @@ typedef struct element
 } element_t;
 
 static void
-search (size_t *start, size_t *len, size_t shift, char c)
+search (size_t *start, size_t *end, size_t shift, char c)
 {
   size_t l, m, u;
   c |= ' ';
 
-  u = *start + *len;
+  u = *end;
   l = *start;
   while (l < u)
     {
@@ -42,13 +40,13 @@ search (size_t *start, size_t *len, size_t shift, char c)
         u = m;
     }
 
-  if ((l == *start + *len) || ((ELEMENTS[l][shift] | ' ') != c))
+  if ((l == *end) || ((ELEMENTS[l][shift] | ' ') != c))
     {
-      *len = 0;
+      *end = 0;
       return;
     }
 
-  u = *start + *len;
+  u = *end;
   *start = l;
   while (l < u)
     {
@@ -59,7 +57,7 @@ search (size_t *start, size_t *len, size_t shift, char c)
         l = m + 1;
     }
 
-  *len = u - *start;
+  *end = u;
 }
 
 static element_t *
@@ -69,13 +67,13 @@ split (const char *tail)
   element_t *last = NULL;
 
   size_t start = 1;
-  size_t len = NELEMENTS;
+  size_t end = sizeof (ELEMENTS) / sizeof (ELEMENTS[0]);
   size_t shift = 0;
 
   while (tail[shift])
     {
-      search (&start, &len, shift, tail[shift]);
-      if (!len)
+      search (&start, &end, shift, tail[shift]);
+      if (start >= end)
         break;
 
       shift++;
@@ -94,7 +92,6 @@ split (const char *tail)
           last->n = start;
           last->tail = &tail[shift];
           start++;
-          len--;
         }
     }
 

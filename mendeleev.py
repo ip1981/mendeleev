@@ -19,9 +19,9 @@ ELEMENTS = [
 elements = [el.lower().encode() for el in ELEMENTS]
 
 
-def search(start, length, shift, char):
-    upper = start + length
-    lower = start
+def search(rng, shift, char):
+    upper = rng[1]
+    lower = rng[0]
     while lower < upper:
         mid = int((lower + upper) / 2)
         if elements[mid][shift] < char:
@@ -29,14 +29,12 @@ def search(start, length, shift, char):
         else:
             upper = mid
 
-    if lower == start + length:
-        return (0, 0)
+    if lower == rng[1] or elements[lower][shift] != char:
+        rng[1] = 0
+        return
 
-    if elements[lower][shift] != char:
-        return (0, 0)
-
-    upper = start + length
-    start = lower
+    upper = rng[1]
+    rng[0] = lower
     while lower < upper:
         mid = int((lower + upper) / 2)
         if char < elements[mid][shift]:
@@ -44,28 +42,24 @@ def search(start, length, shift, char):
         else:
             lower = mid + 1
 
-    length = upper - start
-
-    return (start, length)
+    rng[1] = upper
 
 
 def split(tail):
     result = []
 
-    start = 0
-    length = len(ELEMENTS)
+    rng = [0, len(ELEMENTS)]
     shift = 0
 
     while shift < len(tail):
-        start, length = search(start, length, shift, tail[shift])
-        if length == 0:
+        search(rng, shift, tail[shift])
+        if rng[0] >= rng[1]:
             break
 
         shift += 1
-        if len(elements[start]) == shift:
-            result.append((ELEMENTS[start], tail[shift:]))
-            start += 1
-            length -= 1
+        if len(elements[rng[0]]) == shift:
+            result.append((ELEMENTS[rng[0]], tail[shift:]))
+            rng[0] += 1
 
     return result or [("?", tail[1:])]
 

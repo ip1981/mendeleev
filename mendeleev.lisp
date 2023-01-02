@@ -11,9 +11,6 @@
      "Sg" "Si" "Sm" "Sn" "Sr" "Ta" "Tb" "Tc" "Te" "Th" "Ti" "Tl"
      "Tm" "Ts" "U"  "V"  "W"  "Xe" "Y"  "Yb" "Zn" "Zr"))
 
-(defconstant +nelems+
-  (1- (length +elements+)))
-
 (defconstant +elems+
   (map 'vector #'string-downcase +elements+))
 
@@ -21,37 +18,33 @@
   (schar (elt +elems+ el) sh))
 
 (defun search-el (range sh ch)
-  (prog* ((top (+ (car range) (cdr range)))
-          (u top)
-          (l (car range))
-          m)
+  (prog ((l (car range)) (u (cdr range)) m)
         (loop while (< l u) do
               (setf m (truncate (+ l u) 2))
               (if (char< (get-part m sh) ch)
                 (setf l (1+ m))
                 (setf u m)))
-        (when (or (= l top) (char/= ch (get-part l sh)))
+        (when (or (= l (cdr range)) (char/= ch (get-part l sh)))
           (setf (cdr range) 0) (return))
-        (setf u top
-              (car range) l)
+        (setf (car range) l u (cdr range))
         (loop while (< l u) do
               (setf m (truncate (+ l u) 2))
               (if (char< ch (get-part m sh))
                 (setf u m)
                 (setf l (1+ m))))
-        (setf (cdr range) (- u (car range))) (return)))
+        (setf (cdr range) u) (return)))
 
 (defun split (tail)
-  (prog ((range (cons 1 +nelems+))
+  (prog ((range (cons 1 (length +elements+)))
          (sh 0)
          (r ()))
         (loop
           (search-el range sh (schar tail sh))
-          (when (= 0 (cdr range)) (return))
+          (when (>= (car range) (cdr range)) (return))
           (incf sh)
           (when (= sh (length (elt +elems+ (car range))))
             (push (cons (car range) (subseq tail sh)) r)
-            (incf (car range)) (decf (cdr range)))
+            (incf (car range)))
           (when (= sh (length tail)) (return)))
         (when (null r) (push (cons 0 (subseq tail 1)) r))
         (return (reverse r))))
